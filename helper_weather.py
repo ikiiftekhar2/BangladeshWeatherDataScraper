@@ -1,5 +1,7 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from datetime import datetime
+import re
 
 options = Options()
 options.headless = True
@@ -18,7 +20,38 @@ def fetch_data(url: str, driver_path : str) -> str:
                 t_text = z
         return t_text
     except:
-        print("OOpsie on fetching data")
+        print("Failed on fetching forecast")
 
-def process_text(text: str) -> list:
-    
+
+def process_text(text: str, curr_list : list, c_url : str) -> dict:
+    try:
+        curr_url = c_url
+        divi = curr_list[1]
+        definer = curr_url.split('#')
+        stio = ''
+        if len(curr_url.split('#')) > 1:
+            t_string = definer[1]
+            res = re.sub(r'[^a-zA-Z]', ' ', t_string)
+            res = re.sub(' +', ' ', res)
+            stio = res
+        else:
+            stio = divi
+
+        now = datetime.now()
+        dt_string = now.strftime("%d/%m/%Y")
+        pre_ev = re.findall("[-+]?(?:\d*\.\d+|\d+)", text)
+        packaged_data = {
+        "Date" : dt_string ,
+        "Station" : stio,
+        "TempMax" : pre_ev[0],
+        "TempMin" : pre_ev[1],
+        "RainMM" : pre_ev[6], 
+        "HUmidMorn" : pre_ev[12],
+        "HUmidEve" : pre_ev[13], 
+        "SurfPressure" : pre_ev[14],
+        "Wind" : pre_ev[7],
+        "Sunrise" : pre_ev[2] + ":" + pre_ev[3],
+        "Sundown" : str((int(pre_ev[4]) + 12)) + ":" + pre_ev[5]}
+        return packaged_data
+    except:
+        print("Failed to process data")
