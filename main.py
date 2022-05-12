@@ -11,6 +11,6 @@ def everything():
 
 schedule.every().day.at(e_time).do(everything)
 
-#while True: 
-#    schedule.run_pending()
-#    time.sleep(1)
+while True: 
+    schedule.run_pending()
+    time.sleep(1)
