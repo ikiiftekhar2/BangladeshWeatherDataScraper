@@ -1,3 +1,4 @@
+import string
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from datetime import datetime
@@ -55,3 +56,14 @@ def process_text(text: str, curr_list : list, c_url : str) -> dict:
         return packaged_data
     except:
         print("Failed to process data")
+
+
+def get_data(st_data : list, driver_path : string) -> list:
+    
+    f_pckg = []
+    for v in st_data:
+        urlz = v[0]
+        for b in urlz:
+            f_pckg = f_pckg + [
+                process_text(fetch_data(b, driver_path),v, b)
+            ]
