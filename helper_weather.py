@@ -1,8 +1,16 @@
+from random import sample
 import string
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from datetime import datetime
 import re
+from google.auth.transport.requests import Request
+from google.oauth2.credentials import Credentials
+from google_auth_oauthlib.flow import InstalledAppFlow
+from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
+
+from google.oauth2 import service_account
 
 options = Options()
 options.headless = True
@@ -67,3 +75,31 @@ def get_data(st_data : list, driver_path : string) -> list:
             f_pckg = f_pckg + [
                 process_text(fetch_data(b, driver_path),v, b)
             ]
+    return f_pckg
+
+def full_send(full_p: list):
+    for x in full_p:
+        try:
+            sample = x
+            payload = [[sample["Date"], sample["Station"], sample["TempMax"], sample["TempMin"], 
+                        sample["RainMM"], sample["HUmidMorn"],sample["HUmidEve"],
+                         sample["Sunrise"], sample["Sundown"], sample["SurfPressure"], sample["Wind"]]]
+            SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
+            SERVICE_ACCOUNT_FILE = 'keys.json'
+            creds = None
+            creds = service_account.Credentials.from_service_account_file(
+                    SERVICE_ACCOUNT_FILE, scopes=SCOPES)
+
+            # The ID and range of a sample spreadsheet.
+            SAMPLE_SPREADSHEET_ID = '1Ed9Z_hdnW7D6yyMvNj6e4O5ooUuHy5Mhn3wS_m86VR0'
+
+            service = build('sheets', 'v4', credentials=creds)
+
+                    # Call the Sheets API
+            sheet = service.spreadsheets()
+            request = service.spreadsheets().values().append(spreadsheetId=SAMPLE_SPREADSHEET_ID, 
+                                    range= "main!A1:K1", valueInputOption="USER_ENTERED", 
+                                    insertDataOption="INSERT_ROWS", body={"values" : payload})
+            response = request.execute()
+        except:
+            print("Failed on Posting to Google")
